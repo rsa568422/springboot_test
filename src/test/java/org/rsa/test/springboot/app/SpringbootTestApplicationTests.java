@@ -2,6 +2,8 @@ package org.rsa.test.springboot.app;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.rsa.test.springboot.app.models.Banco;
+import org.rsa.test.springboot.app.models.Cuenta;
 import org.rsa.test.springboot.app.repositories.BancoRepository;
 import org.rsa.test.springboot.app.repositories.CuentaRepository;
 import org.rsa.test.springboot.app.services.CuentaService;
@@ -48,6 +50,17 @@ class SpringbootTestApplicationTests {
 
 		assertEquals("900", saldoOrigen.toPlainString());
 		assertEquals("2100", saldoDestino.toPlainString());
+
+		int total = this.service.revisarTotalTransferencias(1L);
+
+		assertEquals(1, total);
+
+		verify(this.cuentaRepository, times(3)).findById(1L);
+		verify(this.cuentaRepository, times(3)).findById(2L);
+		verify(this.cuentaRepository, times(2)).update(any(Cuenta.class));
+
+		verify(this.bancoRepository, times(2)).findById(1L);
+		verify(this.bancoRepository).update(any(Banco.class));
 	}
 
 }
