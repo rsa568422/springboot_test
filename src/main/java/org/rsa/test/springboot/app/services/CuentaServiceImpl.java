@@ -7,6 +7,7 @@ import org.rsa.test.springboot.app.repositories.CuentaRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Service
 public class CuentaServiceImpl implements CuentaService {
@@ -22,35 +23,35 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Override
     public Cuenta findById(Long id) {
-        return this.cuentaRepository.findById(id);
+        return this.cuentaRepository.findById(id).orElseThrow();
     }
 
     @Override
     public int revisarTotalTransferencias(Long bancoId) {
-        Banco banco = this.bancoRepository.findById(bancoId);
-        return banco.getTotalTransferencias();
+        Optional<Banco> banco = this.bancoRepository.findById(bancoId);
+        return banco.orElseThrow().getTotalTransferencias();
     }
 
     @Override
     public BigDecimal revisarSaldo(Long cuentaId) {
-        Cuenta cuenta = this.cuentaRepository.findById(cuentaId);
+        Cuenta cuenta = this.cuentaRepository.findById(cuentaId).orElseThrow();
         return cuenta.getSaldo();
     }
 
     @Override
     public void transferir(Long bancoId, Long numCuentaOrigen, Long numCuentaDestino, BigDecimal monto) {
-        Cuenta cuentaOrigen = this.cuentaRepository.findById(numCuentaOrigen);
+        Cuenta cuentaOrigen = this.cuentaRepository.findById(numCuentaOrigen).orElseThrow();
         cuentaOrigen.debito(monto);
-        cuentaRepository.update(cuentaOrigen);
+        cuentaRepository.save(cuentaOrigen);
 
-        Cuenta cuentaDestino = this.cuentaRepository.findById(numCuentaDestino);
+        Cuenta cuentaDestino = this.cuentaRepository.findById(numCuentaDestino).orElseThrow();
         cuentaDestino.credito(monto);
-        cuentaRepository.update(cuentaDestino);
+        cuentaRepository.save(cuentaDestino);
 
-        Banco banco = this.bancoRepository.findById(bancoId);
-        int totalTransferencias = banco.getTotalTransferencias();
-        banco.setTotalTransferencias(++totalTransferencias);
-        bancoRepository.update(banco);
+        Optional<Banco> banco = this.bancoRepository.findById(bancoId);
+        int totalTransferencias = banco.orElseThrow().getTotalTransferencias();
+        banco.orElseThrow().setTotalTransferencias(++totalTransferencias);
+        bancoRepository.save(banco.orElseThrow());
     }
 
 }
