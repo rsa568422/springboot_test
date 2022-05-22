@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -30,9 +31,9 @@ class SpringbootTestApplicationTests {
 
 	@Test
 	void contextLoads() {
-		Cuenta cuentaOrigen = Datos.crearCuenta001();
-		Cuenta cuentaDestino = Datos.crearCuenta002();
-		Banco banco = Datos.crearBanco();
+		Optional<Cuenta> cuentaOrigen = Datos.crearCuenta001();
+		Optional<Cuenta> cuentaDestino = Datos.crearCuenta002();
+		Optional<Banco> banco = Datos.crearBanco();
 
 		when(this.cuentaRepository.findById(1L)).thenReturn(cuentaOrigen);
 		when(this.cuentaRepository.findById(2L)).thenReturn(cuentaDestino);
@@ -58,10 +59,10 @@ class SpringbootTestApplicationTests {
 
 		verify(this.cuentaRepository, times(3)).findById(1L);
 		verify(this.cuentaRepository, times(3)).findById(2L);
-		verify(this.cuentaRepository, times(2)).update(any(Cuenta.class));
+		verify(this.cuentaRepository, times(2)).save(any(Cuenta.class));
 
 		verify(this.bancoRepository, times(2)).findById(1L);
-		verify(this.bancoRepository).update(any(Banco.class));
+		verify(this.bancoRepository).save(any(Banco.class));
 
 		verify(this.cuentaRepository, times(6)).findById(anyLong());
 		verify(this.cuentaRepository, never()).findAll();
@@ -69,9 +70,9 @@ class SpringbootTestApplicationTests {
 
 	@Test
 	void contextLoads2() {
-		Cuenta cuentaOrigen = Datos.crearCuenta001();
-		Cuenta cuentaDestino = Datos.crearCuenta002();
-		Banco banco = Datos.crearBanco();
+		Optional<Cuenta> cuentaOrigen = Datos.crearCuenta001();
+		Optional<Cuenta> cuentaDestino = Datos.crearCuenta002();
+		Optional<Banco> banco = Datos.crearBanco();
 
 		when(this.cuentaRepository.findById(1L)).thenReturn(cuentaOrigen);
 		when(this.cuentaRepository.findById(2L)).thenReturn(cuentaDestino);
@@ -97,10 +98,10 @@ class SpringbootTestApplicationTests {
 
 		verify(this.cuentaRepository, times(3)).findById(1L);
 		verify(this.cuentaRepository, times(2)).findById(2L);
-		verify(this.cuentaRepository, never()).update(any(Cuenta.class));
+		verify(this.cuentaRepository, never()).save(any(Cuenta.class));
 
 		verify(this.bancoRepository, times(1)).findById(1L);
-		verify(this.bancoRepository, never()).update(any(Banco.class));
+		verify(this.bancoRepository, never()).save(any(Banco.class));
 
 		verify(this.cuentaRepository, times(5)).findById(anyLong());
 		verify(this.cuentaRepository, never()).findAll();
