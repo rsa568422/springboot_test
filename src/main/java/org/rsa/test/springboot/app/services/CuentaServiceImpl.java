@@ -9,9 +9,9 @@ import java.math.BigDecimal;
 
 public class CuentaServiceImpl implements CuentaService {
 
-    private CuentaRepository cuentaRepository;
+    private final CuentaRepository cuentaRepository;
 
-    private BancoRepository bancoRepository;
+    private final BancoRepository bancoRepository;
 
     public CuentaServiceImpl(CuentaRepository cuentaRepository, BancoRepository bancoRepository) {
         this.cuentaRepository = cuentaRepository;
@@ -37,11 +37,6 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Override
     public void transferir(Long bancoId, Long numCuentaOrigen, Long numCuentaDestino, BigDecimal monto) {
-        Banco banco = this.bancoRepository.findById(bancoId);
-        int totalTransferencias = banco.getTotalTransferencias();
-        banco.setTotalTransferencias(++totalTransferencias);
-        bancoRepository.update(banco);
-
         Cuenta cuentaOrigen = this.cuentaRepository.findById(numCuentaOrigen);
         cuentaOrigen.debito(monto);
         cuentaRepository.update(cuentaOrigen);
@@ -49,6 +44,11 @@ public class CuentaServiceImpl implements CuentaService {
         Cuenta cuentaDestino = this.cuentaRepository.findById(numCuentaDestino);
         cuentaDestino.credito(monto);
         cuentaRepository.update(cuentaDestino);
+
+        Banco banco = this.bancoRepository.findById(bancoId);
+        int totalTransferencias = banco.getTotalTransferencias();
+        banco.setTotalTransferencias(++totalTransferencias);
+        bancoRepository.update(banco);
     }
 
 }
