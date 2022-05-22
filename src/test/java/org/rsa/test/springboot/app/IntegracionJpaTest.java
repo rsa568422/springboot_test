@@ -6,6 +6,7 @@ import org.rsa.test.springboot.app.repositories.CuentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -48,6 +49,17 @@ public class IntegracionJpaTest {
 
         assertFalse(cuentas.isEmpty());
         assertEquals(2, cuentas.size());
+    }
+
+    @Test
+    void testSave() {
+        Cuenta cuentaPepe = new Cuenta(null, "Pepe", new BigDecimal("3000"));
+
+        Cuenta cuenta = this.cuentaRepository.save(cuentaPepe);
+
+        assertEquals("Pepe", cuenta.getPersona());
+        assertEquals("3000", cuenta.getSaldo().toPlainString());
+        //assertEquals(3, cuenta.getId());
     }
 
 }
