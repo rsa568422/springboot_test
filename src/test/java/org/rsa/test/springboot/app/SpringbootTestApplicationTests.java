@@ -1,6 +1,5 @@
 package org.rsa.test.springboot.app;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.rsa.test.springboot.app.exceptions.DineroInsuficienteException;
 import org.rsa.test.springboot.app.models.Banco;
@@ -8,8 +7,9 @@ import org.rsa.test.springboot.app.models.Cuenta;
 import org.rsa.test.springboot.app.repositories.BancoRepository;
 import org.rsa.test.springboot.app.repositories.CuentaRepository;
 import org.rsa.test.springboot.app.services.CuentaService;
-import org.rsa.test.springboot.app.services.CuentaServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
 
@@ -19,18 +19,14 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class SpringbootTestApplicationTests {
 
+	@Autowired
 	CuentaService service;
 
+	@MockBean
 	CuentaRepository cuentaRepository;
 
+	@MockBean
 	BancoRepository bancoRepository;
-
-	@BeforeEach
-	void setUp() {
-		this.cuentaRepository = mock(CuentaRepository.class);
-		this.bancoRepository = mock(BancoRepository.class);
-		this.service = new CuentaServiceImpl(this.cuentaRepository, this.bancoRepository);
-	}
 
 	@Test
 	void contextLoads() {
