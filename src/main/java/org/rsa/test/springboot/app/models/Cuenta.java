@@ -3,8 +3,11 @@ package org.rsa.test.springboot.app.models;
 import lombok.*;
 import org.rsa.test.springboot.app.exceptions.DineroInsuficienteException;
 
+import javax.persistence.*;
 import java.math.BigDecimal;
 
+@Entity
+@Table(name = "cuentas")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -12,6 +15,8 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 public class Cuenta {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String persona;
