@@ -1,7 +1,7 @@
 package org.rsa.test.springboot.app;
 
-import org.rsa.test.springboot.app.services.models.Banco;
-import org.rsa.test.springboot.app.services.models.Cuenta;
+import org.rsa.test.springboot.app.models.Banco;
+import org.rsa.test.springboot.app.models.Cuenta;
 
 import java.math.BigDecimal;
 import java.util.Optional;

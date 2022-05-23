@@ -1,4 +1,4 @@
-package org.rsa.test.springboot.app.services.models;
+package org.rsa.test.springboot.app.models;
 
 import javax.persistence.*;
 
