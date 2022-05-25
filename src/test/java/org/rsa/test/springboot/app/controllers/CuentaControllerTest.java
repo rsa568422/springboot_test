@@ -12,6 +12,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -59,6 +61,16 @@ class CuentaControllerTest {
         dto.setCuentaDestinoId(2L);
         dto.setMonto(new BigDecimal("100"));
 
+        System.out.println(this.objectMapper.writeValueAsString(dto));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("date", LocalDate.now().toString());
+        response.put("status", "OK");
+        response.put("mensaje", "Transferencia realizada con éxito");
+        response.put("transaccion", dto);
+
+        System.out.println(this.objectMapper.writeValueAsString(response));
+
         this.mvc.perform(post("/api/cuentas/transferir")
                 .contentType(APPLICATION_JSON)
                 .content(this.objectMapper.writeValueAsString(dto)))
@@ -66,7 +78,8 @@ class CuentaControllerTest {
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$.date").value(LocalDate.now().toString()))
                 .andExpect(jsonPath("$.mensaje").value("Transferencia realizada con éxito"))
-                .andExpect(jsonPath("$.transaccion.cuentaOrigenId").value(dto.getCuentaOrigenId()));
+                .andExpect(jsonPath("$.transaccion.cuentaOrigenId").value(dto.getCuentaOrigenId()))
+                .andExpect(content().json(this.objectMapper.writeValueAsString(response)));
     }
 
 }
