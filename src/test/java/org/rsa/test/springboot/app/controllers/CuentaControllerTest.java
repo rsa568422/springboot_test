@@ -19,10 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.rsa.test.springboot.app.Datos.crearCuenta001;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -46,7 +45,7 @@ class CuentaControllerTest {
 
     @Test
     void testDetalle() throws Exception {
-        when(this.cuentaService.findById(1L)).thenReturn(crearCuenta001().orElseThrow());
+        when(this.cuentaService.findById(1L)).thenReturn(Datos.crearCuenta001().orElseThrow());
 
         this.mvc.perform(get("/api/cuentas/1")
                 .contentType(APPLICATION_JSON))
@@ -92,7 +91,8 @@ class CuentaControllerTest {
         List<Cuenta> cuentas = Arrays.asList(Datos.crearCuenta001().orElseThrow(), Datos.crearCuenta002().orElseThrow());
         when(this.cuentaService.findAll()).thenReturn(cuentas);
 
-        this.mvc.perform(get("/api/cuentas").contentType(APPLICATION_JSON))
+        this.mvc.perform(get("/api/cuentas")
+                .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(APPLICATION_JSON))
                 .andExpect(jsonPath("$[0].persona").value("Andrés"))
@@ -101,6 +101,27 @@ class CuentaControllerTest {
                 .andExpect(jsonPath("$[1].saldo").value("2000"))
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(content().json(this.objectMapper.writeValueAsString(cuentas)));
+        verify(this.cuentaService).findAll();
+    }
+
+    @Test
+    void testGuardar() throws Exception {
+        Cuenta cuenta = new Cuenta(null, "Pepe", new BigDecimal("3000"));
+        when(this.cuentaService.save(any())).then(invocation -> {
+            Cuenta c = invocation.getArgument(0);
+            c.setId(3L);
+            return c;
+        });
+
+        this.mvc.perform(post("/api/cuentas")
+                .contentType(APPLICATION_JSON)
+                .content(this.objectMapper.writeValueAsString(cuenta)))
+                .andExpect(status().isCreated())
+                .andExpect(content().contentType(APPLICATION_JSON))
+                .andExpect(jsonPath("$.id", is(3)))
+                .andExpect(jsonPath("$.persona", is("Pepe")))
+                .andExpect(jsonPath("$.saldo", is(3000)));
+        verify(this.cuentaService).save(any());
     }
 
 }
