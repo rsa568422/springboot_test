@@ -24,6 +24,7 @@ public class CuentaServiceImpl implements CuentaService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Cuenta> findAll() {
         return this.cuentaRepository.findAll();
     }
@@ -35,8 +36,9 @@ public class CuentaServiceImpl implements CuentaService {
     }
 
     @Override
+    @Transactional
     public Cuenta save(Cuenta cuenta) {
-        return null;
+        return this.cuentaRepository.save(cuenta);
     }
 
     @Override
