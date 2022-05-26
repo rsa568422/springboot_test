@@ -25,7 +25,7 @@ public class CuentaServiceImpl implements CuentaService {
 
     @Override
     public List<Cuenta> findAll() {
-        return null;
+        return this.cuentaRepository.findAll();
     }
 
     @Override
