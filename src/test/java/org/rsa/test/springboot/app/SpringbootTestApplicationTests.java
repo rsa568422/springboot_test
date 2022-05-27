@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,6 +121,37 @@ class SpringbootTestApplicationTests {
 		assertEquals("Andrés", cuenta1.getPersona());
 		assertEquals("Andrés", cuenta2.getPersona());
 		verify(this.cuentaRepository, times(2)).findById(1L);
+	}
+
+	@Test
+	void testFindAll() {
+		List<Cuenta> datos = Arrays.asList(Datos.crearCuenta001().orElseThrow(), Datos.crearCuenta002().orElseThrow());
+		when(this.cuentaRepository.findAll()).thenReturn(datos);
+
+		List<Cuenta> cuentas = this.service.findAll();
+
+		assertFalse(cuentas.isEmpty());
+		assertEquals(2, cuentas.size());
+		assertTrue(cuentas.contains(Datos.crearCuenta002().orElseThrow()));
+		verify(this.cuentaRepository).findAll();
+	}
+
+	@Test
+	void testSave() {
+		Cuenta cuentaPepe = new Cuenta(null, "Pepe", new BigDecimal("3000"));
+		when(this.cuentaRepository.save(any())).then(invocation -> {
+			Cuenta c = invocation.getArgument(0);
+			c.setId(3L);
+			return c;
+		});
+
+		Cuenta cuenta = this.service.save(cuentaPepe);
+
+		assertEquals("Pepe", cuenta.getPersona());
+		assertEquals(3L, cuenta.getId());
+		assertEquals("3000", cuenta.getSaldo().toPlainString());
+
+		verify(this.cuentaRepository).save(any());
 	}
 
 }
