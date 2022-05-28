@@ -200,4 +200,35 @@ class CuentaControllerWebTestClientTests {
                 });
     }
 
+    @Test
+    @Order(8)
+    void testEliminar() {
+        this.client
+                .get().uri("/api/cuentas")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON)
+                .expectBodyList(Cuenta.class)
+                .hasSize(4);
+
+        this.client
+                .delete().uri("/api/cuentas/3")
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody().isEmpty();
+
+        this.client
+                .get().uri("/api/cuentas")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType(APPLICATION_JSON)
+                .expectBodyList(Cuenta.class)
+                .hasSize(3);
+
+        this.client
+                .get().uri("/api/cuentas/3")
+                .exchange()
+                .expectStatus().is5xxServerError();
+    }
+
 }

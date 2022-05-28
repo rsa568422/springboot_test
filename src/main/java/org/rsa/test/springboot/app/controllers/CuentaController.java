@@ -52,4 +52,10 @@ public class CuentaController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(NO_CONTENT)
+    public void eliminar(@PathVariable Long id) {
+        this.cuentaService.deleteById(id);
+    }
+
 }
