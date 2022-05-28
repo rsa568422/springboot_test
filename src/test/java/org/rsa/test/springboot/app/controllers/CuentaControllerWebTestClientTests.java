@@ -53,8 +53,8 @@ class CuentaControllerWebTestClientTests {
         response.put("mensaje", "Transferencia realizada con éxito");
         response.put("transaccion", dto);
 
-        this.client.post()
-                .uri("/api/cuentas/transferir")
+        this.client
+                .post().uri("/api/cuentas/transferir")
                 .contentType(APPLICATION_JSON)
                 .bodyValue(dto)
                 .exchange()
@@ -86,8 +86,8 @@ class CuentaControllerWebTestClientTests {
     void testDetalle() throws JsonProcessingException {
         Cuenta cuenta = new Cuenta(1L, "Andrés", new BigDecimal("900"));
 
-        this.client.get()
-                .uri("/api/cuentas/1")
+        this.client
+                .get().uri("/api/cuentas/1")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON)
@@ -101,14 +101,15 @@ class CuentaControllerWebTestClientTests {
     @Test
     @Order(3)
     void testDetalle2() {
-        this.client.get()
-                .uri("/api/cuentas/2")
+        this.client
+                .get().uri("/api/cuentas/2")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON)
                 .expectBody(Cuenta.class)
                 .consumeWith(response -> {
                     Cuenta cuenta = response.getResponseBody();
+                    assertNotNull(cuenta);
                     assertEquals("Roberto", cuenta.getPersona());
                     assertEquals("2100.00", cuenta.getSaldo().toPlainString());
                 });
@@ -118,8 +119,8 @@ class CuentaControllerWebTestClientTests {
     @Test
     @Order(4)
     void testListar() {
-        this.client.get()
-                .uri("/api/cuentas")
+        this.client
+                .get().uri("/api/cuentas")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON)
@@ -137,8 +138,8 @@ class CuentaControllerWebTestClientTests {
     @Test
     @Order(5)
     void testListar2() {
-        this.client.get()
-                .uri("/api/cuentas")
+        this.client
+                .get().uri("/api/cuentas")
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().contentType(APPLICATION_JSON)
@@ -156,6 +157,47 @@ class CuentaControllerWebTestClientTests {
                 })
                 .hasSize(2)
                 .value(hasSize(2));
+    }
+
+    @Test
+    @Order(6)
+    void testGuardar() {
+        Cuenta cuenta = new Cuenta(null, "Pepe", new BigDecimal("3000"));
+
+        this.client
+                .post().uri("/api/cuentas")
+                .contentType(APPLICATION_JSON)
+                .bodyValue(cuenta)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().contentType(APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(3)
+                .jsonPath("$.persona").isEqualTo("Pepe")
+                .jsonPath("$.persona").value(is("Pepe"))
+                .jsonPath("$.saldo").isEqualTo(3000);
+    }
+
+    @Test
+    @Order(7)
+    void testGuardar2() {
+        Cuenta cuenta = new Cuenta(null, "Pepa", new BigDecimal("3500"));
+
+        this.client
+                .post().uri("/api/cuentas")
+                .contentType(APPLICATION_JSON)
+                .bodyValue(cuenta)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().contentType(APPLICATION_JSON)
+                .expectBody(Cuenta.class)
+                .consumeWith(response -> {
+                    Cuenta c = response.getResponseBody();
+                    assertNotNull(c);
+                    assertEquals(4L, c.getId());
+                    assertEquals("Pepa", cuenta.getPersona());
+                    assertEquals("3500", cuenta.getSaldo().toPlainString());
+                });
     }
 
 }
