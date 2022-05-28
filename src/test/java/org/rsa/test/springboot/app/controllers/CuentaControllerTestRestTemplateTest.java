@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
+import org.rsa.test.springboot.app.models.Cuenta;
 import org.rsa.test.springboot.app.models.TransaccionDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -73,6 +74,22 @@ class CuentaControllerTestRestTemplateTest {
         responseMap.put("transaccion", dto);
 
         assertEquals(this.objectMapper.writeValueAsString(responseMap), json);
+    }
+
+    @Test
+    @Order(2)
+    void testDetalle() {
+        ResponseEntity<Cuenta> respuesta = this.client.getForEntity(crearUri("/api/cuentas/1"), Cuenta.class);
+        Cuenta cuenta = respuesta.getBody();
+
+        assertEquals(HttpStatus.OK, respuesta.getStatusCode());
+        assertEquals(APPLICATION_JSON, respuesta.getHeaders().getContentType());
+
+        assertNotNull(cuenta);
+        assertEquals(1L, cuenta.getId());
+        assertEquals("Andrés", cuenta.getPersona());
+        assertEquals("900.00", cuenta.getSaldo().toPlainString());
+        assertEquals(new Cuenta(1L, "Andrés", new BigDecimal("900.00")), cuenta);
     }
 
     private String crearUri(String uri) {
