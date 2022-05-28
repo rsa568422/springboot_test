@@ -14,9 +14,7 @@ public class SpringFoxConfig {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("org.rsa.test.springboot.app.controllers"))
-                .paths(PathSelectors.ant("/api/cuentas/*"))
-                .build();
+                .apis(RequestHandlerSelectors.basePackage("org.aguzman.test.springboot.app.controllers"))
+                .paths(PathSelectors.ant("/api/cuentas/*")).build();
     }
-
 }

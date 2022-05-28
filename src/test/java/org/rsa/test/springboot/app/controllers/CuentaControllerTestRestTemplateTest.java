@@ -12,6 +12,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
@@ -22,12 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-@Tag("integracion_rt")
-@SpringBootTest(webEnvironment = RANDOM_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CuentaControllerTestRestTemplateTest {
 
     @Autowired
@@ -40,54 +38,52 @@ class CuentaControllerTestRestTemplateTest {
 
     @BeforeEach
     void setUp() {
-        this.objectMapper = new ObjectMapper();
+        objectMapper = new ObjectMapper();
     }
 
     @Test
     @Order(1)
     void testTransferir() throws JsonProcessingException {
         TransaccionDto dto = new TransaccionDto();
-        dto.setBancoId(1L);
-        dto.setCuentaOrigenId(1L);
-        dto.setCuentaDestinoId(2L);
         dto.setMonto(new BigDecimal("100"));
+        dto.setCuentaDestinoId(2L);
+        dto.setCuentaOrigenId(1L);
+        dto.setBancoId(1L);
 
-        ResponseEntity<String> response = this.client
-                .postForEntity(crearUri("/api/cuentas/transferir"), dto, String.class);
+        ResponseEntity<String> response = client.
+                postForEntity(crearUri("/api/cuentas/transferir"), dto, String.class);
+        System.out.println(puerto);
         String json = response.getBody();
-        System.out.println(this.puerto);
         System.out.println(json);
-
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(APPLICATION_JSON, response.getHeaders().getContentType());
+        assertEquals(MediaType.APPLICATION_JSON, response.getHeaders().getContentType());
         assertNotNull(json);
-        assertTrue(json.contains("Transferencia realizada con éxito"));
-        assertTrue(json.contains("{\"bancoId\":1,\"cuentaOrigenId\":1,\"cuentaDestinoId\":2,\"monto\":100}"));
+        assertTrue(json.contains("Transferencia realizada con éxito!"));
+        assertTrue(json.contains("{\"cuentaOrigenId\":1,\"cuentaDestinoId\":2,\"monto\":100,\"bancoId\":1}"));
 
-        JsonNode jsonNode = this.objectMapper.readTree(json);
-        assertEquals("Transferencia realizada con éxito", jsonNode.path("mensaje").asText());
+        JsonNode jsonNode = objectMapper.readTree(json);
+        assertEquals("Transferencia realizada con éxito!", jsonNode.path("mensaje").asText());
         assertEquals(LocalDate.now().toString(), jsonNode.path("date").asText());
         assertEquals("100", jsonNode.path("transaccion").path("monto").asText());
         assertEquals(1L, jsonNode.path("transaccion").path("cuentaOrigenId").asLong());
-        assertEquals(2L, jsonNode.path("transaccion").path("cuentaDestinoId").asLong());
 
-        Map<String, Object> responseMap = new HashMap<>();
-        responseMap.put("date", LocalDate.now().toString());
-        responseMap.put("status", "OK");
-        responseMap.put("mensaje", "Transferencia realizada con éxito");
-        responseMap.put("transaccion", dto);
+        Map<String, Object> response2 = new HashMap<>();
+        response2.put("date", LocalDate.now().toString());
+        response2.put("status", "OK");
+        response2.put("mensaje", "Transferencia realizada con éxito!");
+        response2.put("transaccion", dto);
 
-        assertEquals(this.objectMapper.writeValueAsString(responseMap), json);
+        assertEquals(objectMapper.writeValueAsString(response2), json);
+
     }
 
     @Test
     @Order(2)
     void testDetalle() {
-        ResponseEntity<Cuenta> respuesta = this.client.getForEntity(crearUri("/api/cuentas/1"), Cuenta.class);
+        ResponseEntity<Cuenta> respuesta = client.getForEntity(crearUri("/api/cuentas/1"), Cuenta.class);
         Cuenta cuenta = respuesta.getBody();
-
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
-        assertEquals(APPLICATION_JSON, respuesta.getHeaders().getContentType());
+        assertEquals(MediaType.APPLICATION_JSON, respuesta.getHeaders().getContentType());
 
         assertNotNull(cuenta);
         assertEquals(1L, cuenta.getId());
@@ -96,35 +92,29 @@ class CuentaControllerTestRestTemplateTest {
         assertEquals(new Cuenta(1L, "Andrés", new BigDecimal("900.00")), cuenta);
     }
 
-    private String crearUri(String uri) {
-        return String.format("http://localhost:%d%s", this.puerto, uri);
-    }
-
     @Test
     @Order(3)
     void testListar() throws JsonProcessingException {
-        ResponseEntity<Cuenta[]> respuesta = this.client.getForEntity(crearUri("/api/cuentas"), Cuenta[].class);
+        ResponseEntity<Cuenta[]> respuesta = client.getForEntity(crearUri("/api/cuentas"), Cuenta[].class);
+        List<Cuenta> cuentas = Arrays.asList(respuesta.getBody());
 
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
-        assertEquals(APPLICATION_JSON, respuesta.getHeaders().getContentType());
-        assertNotNull(respuesta.getBody());
-
-        List<Cuenta> cuentas = Arrays.asList(respuesta.getBody());
+        assertEquals(MediaType.APPLICATION_JSON, respuesta.getHeaders().getContentType());
 
         assertEquals(2, cuentas.size());
         assertEquals(1L, cuentas.get(0).getId());
         assertEquals("Andrés", cuentas.get(0).getPersona());
         assertEquals("900.00", cuentas.get(0).getSaldo().toPlainString());
         assertEquals(2L, cuentas.get(1).getId());
-        assertEquals("Roberto", cuentas.get(1).getPersona());
+        assertEquals("John", cuentas.get(1).getPersona());
         assertEquals("2100.00", cuentas.get(1).getSaldo().toPlainString());
 
-        JsonNode json = this.objectMapper.readTree(this.objectMapper.writeValueAsString(cuentas));
+        JsonNode json = objectMapper.readTree(objectMapper.writeValueAsString(cuentas));
         assertEquals(1L, json.get(0).path("id").asLong());
         assertEquals("Andrés", json.get(0).path("persona").asText());
         assertEquals("900.0", json.get(0).path("saldo").asText());
         assertEquals(2L, json.get(1).path("id").asLong());
-        assertEquals("Roberto", json.get(1).path("persona").asText());
+        assertEquals("John", json.get(1).path("persona").asText());
         assertEquals("2100.0", json.get(1).path("saldo").asText());
     }
 
@@ -133,14 +123,10 @@ class CuentaControllerTestRestTemplateTest {
     void testGuardar() {
         Cuenta cuenta = new Cuenta(null, "Pepa", new BigDecimal("3800"));
 
-        ResponseEntity<Cuenta> respuesta = this.client.postForEntity(crearUri("/api/cuentas"), cuenta, Cuenta.class);
-
+        ResponseEntity<Cuenta> respuesta = client.postForEntity(crearUri("/api/cuentas"), cuenta, Cuenta.class);
         assertEquals(HttpStatus.CREATED, respuesta.getStatusCode());
-        assertEquals(APPLICATION_JSON, respuesta.getHeaders().getContentType());
-        assertNotNull(respuesta.getBody());
-
+        assertEquals(MediaType.APPLICATION_JSON, respuesta.getHeaders().getContentType());
         Cuenta cuentaCreada = respuesta.getBody();
-
         assertNotNull(cuentaCreada);
         assertEquals(3L, cuentaCreada.getId());
         assertEquals("Pepa", cuentaCreada.getPersona());
@@ -150,29 +136,30 @@ class CuentaControllerTestRestTemplateTest {
     @Test
     @Order(5)
     void testEliminar() {
-        ResponseEntity<Cuenta[]> respuesta = this.client.getForEntity(crearUri("/api/cuentas"), Cuenta[].class);
-        assertNotNull(respuesta.getBody());
-        List<Cuenta> cuentas = Arrays.asList(respuesta.getBody());
 
+        ResponseEntity<Cuenta[]> respuesta = client.getForEntity(crearUri("/api/cuentas"), Cuenta[].class);
+        List<Cuenta> cuentas = Arrays.asList(respuesta.getBody());
         assertEquals(3, cuentas.size());
 
-        //this.client.delete(crearUri("/api/cuentas/3"));
+        //client.delete(crearUri("/api/cuentas/3"));
         Map<String, Long> pathVariables = new HashMap<>();
         pathVariables.put("id", 3L);
-        ResponseEntity<Void> exchange = this.client.exchange(crearUri("/api/cuentas/{id}"), HttpMethod.DELETE, null, Void.class, pathVariables);
+        ResponseEntity<Void> exchange = client.exchange(crearUri("/api/cuentas/{id}"), HttpMethod.DELETE, null, Void.class,
+                pathVariables);
+
         assertEquals(HttpStatus.NO_CONTENT, exchange.getStatusCode());
         assertFalse(exchange.hasBody());
 
-        respuesta = this.client.getForEntity(crearUri("/api/cuentas"), Cuenta[].class);
-        assertNotNull(respuesta.getBody());
+        respuesta = client.getForEntity(crearUri("/api/cuentas"), Cuenta[].class);
         cuentas = Arrays.asList(respuesta.getBody());
-
         assertEquals(2, cuentas.size());
 
-        ResponseEntity<Cuenta> respuestaDetalle = this.client.getForEntity(crearUri("/api/cuentas/3"), Cuenta.class);
-
+        ResponseEntity<Cuenta> respuestaDetalle = client.getForEntity(crearUri("/api/cuentas/3"), Cuenta.class);
         assertEquals(HttpStatus.NOT_FOUND, respuestaDetalle.getStatusCode());
         assertFalse(respuestaDetalle.hasBody());
     }
 
+    private String crearUri(String uri) {
+        return "http://localhost:" + puerto + uri;
+    }
 }

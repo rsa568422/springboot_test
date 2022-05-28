@@ -1,8 +1,7 @@
 package org.rsa.test.springboot.app;
 
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.rsa.test.springboot.app.models.Cuenta;
+import org.junit.jupiter.api.Test;
 import org.rsa.test.springboot.app.repositories.CuentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -14,83 +13,92 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Tag("integracion_jpa")
 @DataJpaTest
 public class IntegracionJpaTest {
-
     @Autowired
     CuentaRepository cuentaRepository;
 
     @Test
     void testFindById() {
-        Optional<Cuenta> cuenta = this.cuentaRepository.findById(1L);
-
+        Optional<Cuenta> cuenta = cuentaRepository.findById(1L);
         assertTrue(cuenta.isPresent());
         assertEquals("Andrés", cuenta.orElseThrow().getPersona());
     }
 
     @Test
     void testFindByPersona() {
-        Optional<Cuenta> cuenta = this.cuentaRepository.findByPersona("Andrés");
-
+        Optional<Cuenta> cuenta = cuentaRepository.findByPersona("Andrés");
         assertTrue(cuenta.isPresent());
+        assertEquals("Andrés", cuenta.orElseThrow().getPersona());
         assertEquals("1000.00", cuenta.orElseThrow().getSaldo().toPlainString());
     }
 
     @Test
     void testFindByPersonaThrowException() {
-        Optional<Cuenta> cuenta = this.cuentaRepository.findByPersona("John");
-
+        Optional<Cuenta> cuenta = cuentaRepository.findByPersona("Rod");
         assertThrows(NoSuchElementException.class, cuenta::orElseThrow);
         assertFalse(cuenta.isPresent());
     }
 
     @Test
     void testFindAll() {
-        List<Cuenta> cuentas = this.cuentaRepository.findAll();
-
+        List<Cuenta> cuentas = cuentaRepository.findAll();
         assertFalse(cuentas.isEmpty());
         assertEquals(2, cuentas.size());
     }
 
     @Test
     void testSave() {
+        // Given
         Cuenta cuentaPepe = new Cuenta(null, "Pepe", new BigDecimal("3000"));
 
-        Cuenta cuenta = this.cuentaRepository.save(cuentaPepe);
+        // When
+        Cuenta cuenta = cuentaRepository.save(cuentaPepe);
+//        Cuenta cuenta = cuentaRepository.findByPersona("Pepe").orElseThrow();
+//        Cuenta cuenta = cuentaRepository.findById(save.getId()).orElseThrow();
 
+        // Then
         assertEquals("Pepe", cuenta.getPersona());
         assertEquals("3000", cuenta.getSaldo().toPlainString());
-        //assertEquals(3, cuenta.getId());
+//        assertEquals(3, cuenta.getId());
     }
 
     @Test
     void testUpdate() {
+        // Given
         Cuenta cuentaPepe = new Cuenta(null, "Pepe", new BigDecimal("3000"));
 
-        Cuenta cuenta = this.cuentaRepository.save(cuentaPepe);
+        // When
+        Cuenta cuenta = cuentaRepository.save(cuentaPepe);
+        //Cuenta cuenta = cuentaRepository.findByPersona("Pepe").orElseThrow();
+//        Cuenta cuenta = cuentaRepository.findById(save.getId()).orElseThrow();
 
+        // Then
         assertEquals("Pepe", cuenta.getPersona());
         assertEquals("3000", cuenta.getSaldo().toPlainString());
+//        assertEquals(3, cuenta.getId());
 
+        // When
         cuenta.setSaldo(new BigDecimal("3800"));
+        Cuenta cuentaActualizada = cuentaRepository.save(cuenta);
 
-        Cuenta cuentaActualizada = this.cuentaRepository.save(cuenta);
-
+        // Then
         assertEquals("Pepe", cuentaActualizada.getPersona());
         assertEquals("3800", cuentaActualizada.getSaldo().toPlainString());
+
     }
 
     @Test
     void testDelete() {
-        Cuenta cuenta = this.cuentaRepository.findById(2L).orElseThrow();
+        Cuenta cuenta = cuentaRepository.findById(2L).orElseThrow();
+        assertEquals("John", cuenta.getPersona());
 
-        assertEquals("Roberto", cuenta.getPersona());
+        cuentaRepository.delete(cuenta);
 
-        this.cuentaRepository.delete(cuenta);
-
-        assertThrows(NoSuchElementException.class, () -> this.cuentaRepository.findById(2L).orElseThrow());
-        assertEquals(1, this.cuentaRepository.findAll().size());
+        assertThrows(NoSuchElementException.class, () -> {
+//            cuentaRepository.findByPersona("John").orElseThrow();
+            cuentaRepository.findById(2L).orElseThrow();
+        });
+        assertEquals(1, cuentaRepository.findAll().size());
     }
-
 }
