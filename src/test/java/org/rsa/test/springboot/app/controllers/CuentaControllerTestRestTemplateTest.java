@@ -103,9 +103,9 @@ class CuentaControllerTestRestTemplateTest {
     void testListar() throws JsonProcessingException {
         ResponseEntity<Cuenta[]> respuesta = this.client.getForEntity(crearUri("/api/cuentas"), Cuenta[].class);
 
-        assertNotNull(respuesta.getBody());
         assertEquals(HttpStatus.OK, respuesta.getStatusCode());
         assertEquals(APPLICATION_JSON, respuesta.getHeaders().getContentType());
+        assertNotNull(respuesta.getBody());
 
         List<Cuenta> cuentas = Arrays.asList(respuesta.getBody());
 
@@ -124,7 +124,25 @@ class CuentaControllerTestRestTemplateTest {
         assertEquals(2L, json.get(1).path("id").asLong());
         assertEquals("Roberto", json.get(1).path("persona").asText());
         assertEquals("2100.0", json.get(1).path("saldo").asText());
+    }
 
+    @Test
+    @Order(4)
+    void testGuardar() {
+        Cuenta cuenta = new Cuenta(null, "Pepa", new BigDecimal("3800"));
+
+        ResponseEntity<Cuenta> respuesta = this.client.postForEntity(crearUri("/api/cuentas"), cuenta, Cuenta.class);
+
+        assertEquals(HttpStatus.CREATED, respuesta.getStatusCode());
+        assertEquals(APPLICATION_JSON, respuesta.getHeaders().getContentType());
+        assertNotNull(respuesta.getBody());
+
+        Cuenta cuentaCreada = respuesta.getBody();
+
+        assertNotNull(cuentaCreada);
+        assertEquals(3L, cuentaCreada.getId());
+        assertEquals("Pepa", cuentaCreada.getPersona());
+        assertEquals("3800", cuentaCreada.getSaldo().toPlainString());
     }
 
 }
